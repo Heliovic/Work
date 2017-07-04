@@ -102,21 +102,8 @@ public class LocationService extends Service implements AMapLocationListener{
 
     private void startTracking() {
         Log.d(TAG, "startTracking");
-
-//        if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
-//
-//            googleApiClient = new GoogleApiClient.Builder(this)
-//                    .addApi(LocationServices.API)
-//                    .addConnectionCallbacks(this)
-//                    .addOnConnectionFailedListener(this)
-//                    .build();
-//
-//            if (!googleApiClient.isConnected() || !googleApiClient.isConnecting()) {
-//                googleApiClient.connect();
-//            }
-//        } else {
-//            Log.e(TAG, "unable to connect to google play services.");
-//        }
+        locationClient.setLocationOption(locationOption);//给定位客户端对象设置定位参数
+        locationClient.startLocation();//启动定位
     }
 
     protected void sendLocationDataToWebsite(Location location) {
@@ -200,6 +187,12 @@ public class LocationService extends Service implements AMapLocationListener{
 
     @Override
     public void onDestroy() {
+        if(locationClient != null)
+        {
+            locationClient.onDestroy();//销毁定位客户端，同时销毁本地定位服务。
+        }
+        locationClient = null;
+        locationOption = null;
         super.onDestroy();
     }
 
@@ -211,14 +204,17 @@ public class LocationService extends Service implements AMapLocationListener{
     @Override
     public void onLocationChanged(AMapLocation location){
         if (location != null) {
-            Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
+            if(location.getErrorCode() == 0){
+                Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
 
-            // we have our desired accuracy of 500 meters so lets quit this service,
-            // onDestroy will be called and stop our location updates
-            if (location.getAccuracy() < 500.0f) {
-                stopLocationUpdates();
-                sendLocationDataToWebsite(location);
+                // we have our desired accuracy of 500 meters so lets quit this service,
+                // onDestroy will be called and stop our location updates
+                if (location.getAccuracy() < 500.0f) {
+                    stopLocationUpdates();
+                    sendLocationDataToWebsite(location);
+                }
             }
+
         }
     }
 
@@ -226,6 +222,13 @@ public class LocationService extends Service implements AMapLocationListener{
 //        if (googleApiClient != null && googleApiClient.isConnected()) {
 //            googleApiClient.disconnect();
 //        }
+
+        if(locationClient != null)
+        {
+            locationClient.stopLocation();//停止定位后，本地定位服务并不会被销毁
+        }
+
+
     }
 
     /**
