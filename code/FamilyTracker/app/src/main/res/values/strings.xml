@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">FamilyTracker</string>
+    <string name="default_upload_website">https://www.websmithing.com/gpstracker/updatelocation.php</string>
+
+    <string name="tracking_is_off">跟踪停止</string>
+    <string name="tracking_is_on">跟踪进行中</string>
+    <string name="user_needs_to_restart_tracking">Please restart tracking to change the time interval.</string>
+    <string name="reachability_error">Cannot reach the website that you have entered. Did you spell it correctly? Does your website use http or https?</string>
+    <string name="textfields_empty_or_spaces">Please fill in both fields. User names cannot have a space.</string>
+    <string name="google_play_services_unavailable">Please go into Settings > Apps > All and enable Google Play Services.</string>
+    <string name="user_name">用户名</string>
+    <string name="upload_website">上传更新</string>
+    <string name="upload_frequency">上传更新:</string>
+    <string name="one_minute">1 分钟</string>
+    <string name="five_minutes">5 分钟</string>
+    <string name="fifteen_minutes">15 分钟</string>
+</resources>
