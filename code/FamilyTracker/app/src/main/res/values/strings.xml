@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">FamilyTracker</string>
-    <string name="default_upload_website">https://www.websmithing.com/gpstracker/updatelocation.php</string>
+    <string name="default_upload_website">http://finleytracker.applinzi.com/updatelocation.php</string>
 
     <string name="tracking_is_off">跟踪停止</string>
     <string name="tracking_is_on">跟踪进行中</string>

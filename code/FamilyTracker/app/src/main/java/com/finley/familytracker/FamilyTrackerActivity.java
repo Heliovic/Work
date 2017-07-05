@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -20,7 +21,7 @@ import android.widget.Toast;
 import java.util.UUID;
 
 public class FamilyTrackerActivity extends AppCompatActivity {
-    private static final String TAG = "GpsTrackerActivity";
+    private static final String TAG = "FamilyTracker";
 
     // use the websmithing defaultUploadWebsite for testing and then check your
     // location with your browser here: https://www.websmithing.com/gpstracker/displaymap.php
@@ -55,7 +56,7 @@ public class FamilyTrackerActivity extends AppCompatActivity {
         trackingButton = (Button)findViewById(R.id.trackingButton);
         txtUserName.setImeOptions(EditorInfo.IME_ACTION_DONE);
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.websmithing.gpstracker.prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.finley.familytracker.prefs", Context.MODE_PRIVATE);
         currentlyTracking = sharedPreferences.getBoolean("currentlyTracking", false);
 
         boolean firstTimeLoadingApp = sharedPreferences.getBoolean("firstTimeLoadingApp", true);
@@ -87,7 +88,7 @@ public class FamilyTrackerActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), R.string.user_needs_to_restart_tracking, Toast.LENGTH_LONG).show();
         }
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.websmithing.gpstracker.prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.finley.familytracker.prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         switch (intervalRadioGroup.getCheckedRadioButtonId()) {
@@ -113,7 +114,7 @@ public class FamilyTrackerActivity extends AppCompatActivity {
         gpsTrackerIntent = new Intent(context, FamilyTrackerAlarmReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.websmithing.gpstracker.prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.finley.familytracker.prefs", Context.MODE_PRIVATE);
         intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
 
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -134,16 +135,13 @@ public class FamilyTrackerActivity extends AppCompatActivity {
 
     // called when trackingButton is tapped
     protected void trackLocation(View v) {
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.websmithing.gpstracker.prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.finley.familytracker.prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         if (!saveUserSettings()) {
             return;
         }
-
-        if (!checkIfGooglePlayEnabled()) {
-            return;
-        }
+        Log.d(TAG,"trackLocation currentlyTracking = " + currentlyTracking);
 
         if (currentlyTracking) {
             cancelAlarmManager();
@@ -169,8 +167,9 @@ public class FamilyTrackerActivity extends AppCompatActivity {
         if (textFieldsAreEmptyOrHaveSpaces()) {
             return false;
         }
+        TelephonyManager tm = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.websmithing.gpstracker.prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.finley.familytracker.prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         switch (intervalRadioGroup.getCheckedRadioButtonId()) {
@@ -187,9 +186,11 @@ public class FamilyTrackerActivity extends AppCompatActivity {
 
         editor.putString("userName", txtUserName.getText().toString().trim());
         editor.putString("defaultUploadWebsite", txtWebsite.getText().toString().trim());
-
+        if(tm != null)
+        {
+            editor.putString("appID", tm.getLine1Number());
+        }
         editor.apply();
-
         return true;
     }
 
@@ -210,7 +211,7 @@ public class FamilyTrackerActivity extends AppCompatActivity {
     }
 
     private void displayUserSettings() {
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.websmithing.gpstracker.prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.finley.familytracker.prefs", Context.MODE_PRIVATE);
         intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
 
         switch (intervalInMinutes) {
@@ -228,18 +229,6 @@ public class FamilyTrackerActivity extends AppCompatActivity {
         txtWebsite.setText(sharedPreferences.getString("defaultUploadWebsite", defaultUploadWebsite));
         txtUserName.setText(sharedPreferences.getString("userName", ""));
     }
-
-    private boolean checkIfGooglePlayEnabled() {
-//        if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
-//            return true;
-//        } else {
-//            Log.e(TAG, "unable to connect to google play services.");
-//            Toast.makeText(getApplicationContext(), R.string.google_play_services_unavailable, Toast.LENGTH_LONG).show();
-//            return false;
-//        }
-        return false;
-    }
-
 
     private void setTrackingButtonState() {
         if (currentlyTracking) {
